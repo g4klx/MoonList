@@ -1,0 +1,12 @@
+# Format is degrees of azimuth followed by the minium elevation.
+# An elevation of 90 degrees excludes the azimuth from being listed.
+0	90
+104	90
+105	40
+139	35
+140	25
+209	25
+210	30
+269	30
+270	90
+359	90
