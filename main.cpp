@@ -148,6 +148,7 @@ int main(int argc, char** argv)
     ::fprintf(fp, "<!DOCTYPE html>\n<html>\n<head>\n<style>\n");
     ::fprintf(fp, "table, th, td {\nborder: 1px solid black;\nborder-collapse: collapse;\n}\n");
     ::fprintf(fp, "tr:nth-child(even) {\nbackground-color: #D6EEEE;\n}\n");
+    ::fprintf(fp, "td {\ntext-align: center;\n}\n");
     ::fprintf(fp, "</style>\n<title>\nMoon Predictions for %s %d for %s\n</title>\n</head>\n<body>\n", months[month], year + 1900, callsign);
     ::fprintf(fp, "<h1>\nMoon Predictions for %s %d for %s\n</h1>\n", months[month], year + 1900, callsign);
 
