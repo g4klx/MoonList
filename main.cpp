@@ -57,15 +57,15 @@
 #include "skyfast.h"
 #include "vectors3d.h"
 
-#define SITE_HEIGHT_m          20.0     /*!< Height above sea level (metres)  */
 #define SITE_PRESSURE_hPa      1013.0   /*!< Atmospheric pressure (hPa = mbar)*/
 #define SITE_TEMPERATURE_degC  3.0      /*!< Temperature (degrees Celsius)    */
-#define SITE_TIMEZONE_h        0.0      /*!< East zones +ve, west -ve (hours) */
 
 char callsign[25];
 double latitude = 0.0;
 double longitude = 0.0;
+double height = 0.0;
 int increment = 10;
+double timeZone = 0.0;
 char outputFile[255];
 int excludeHourStart = 0;
 int excludeHourEnd = 0;
@@ -107,9 +107,9 @@ int main(int argc, char** argv)
     sky_initTime(37, 0.0, &deltaTs);
 
     /* Set up the fixed site data */
-    sky_setSiteLocation(latitude, longitude, SITE_HEIGHT_m, &site);
+    sky_setSiteLocation(latitude, longitude, height, &site);
     sky_setSiteTempPress(SITE_TEMPERATURE_degC, SITE_PRESSURE_hPa, &site);
-    sky_setSiteTimeZone(SITE_TIMEZONE_h, &site);
+    sky_setSiteTimeZone(timeZone, &site);
 
     time_t now = ::time(NULL);
 
@@ -369,6 +369,10 @@ bool readIniFile()
             bool ret = ::processLocator(value);
             if (!ret)
                 return false;
+        } else if (::strcmp(keyword, "Height") == 0) {
+            height = ::atof(value);
+        } else if (::strcmp(keyword, "TimeZone") == 0) {
+            timeZone = ::atof(value);
         } else if (::strcmp(keyword, "Increment") == 0) {
             increment = ::atoi(value);
         } else if (::strcmp(keyword, "ElevationFile") == 0) {
