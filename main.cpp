@@ -160,27 +160,24 @@ int main(int argc, char** argv)
         moon_nrelTopocentric(j2kUtc_d, &deltaTs, &site, &topo);
 
         if (topo.elevation_rad > degToRad(0.0)) {
+            int y, m, d, h, mins;
+            double s;
+            sky_j2kdToCalTime(j2kUtc_d /* + site.timeZone_d */, &y, &m, &d, &h, &mins, &s);
 
-            if ((tm->tm_hour < excludeHourStart) || (tm->tm_hour > excludeHourEnd)) {
+            if ((h < excludeHourStart) || (h > excludeHourEnd)) {
 
                 if (topo.azimuth_rad < 0.0)
                     topo.azimuth_rad += 2.0 * PI;
 
                 if (interpolate(radToDeg(topo.azimuth_rad), radToDeg(topo.elevation_rad))) {
-                    int y, m, d, h, mins;
-                    double s;
-
-                    // ???
-                    sky_j2kdToCalTime(j2kUtc_d + site.timeZone_d, &y, &m, &d, &h, &mins, &s);
-
                     if (!isUp) {
-                        ::fprintf(fp, "<h4>Starting on %s %02d/%02d</h4>\n", days[tm->tm_wday], tm->tm_mday, tm->tm_mon + 1);
+                        ::fprintf(fp, "<h4>Starting on %s %02d/%02d</h4>\n", days[tm->tm_wday], d, m);
                         ::fprintf(fp, "<table style=\"width:35%%\"><tr>\n<th width=\"5%%\">Date</th>\n<th width=\"6%%\">UTC</th>\n<th width=\"9%%\">Moon Az.</th>\n<th width=\"9%%\">Moon El.</th>\n<th width=\"9%%\">Sun Az.</th>\n<th width=\"9%%\">Sun El.</th>\n</tr>\n");
                     }
 
                     isUp = true;
 
-                    ::fprintf(fp, "<tr>\n<td>%02d/%02d</td>\n<td>%02d%02d</td>\n<td>%.0f</td>\n<td>%.0f</td>\n", tm->tm_mday, tm->tm_mon + 1, tm->tm_hour, tm->tm_min, radToDeg(topo.azimuth_rad), radToDeg(topo.elevation_rad));
+                    ::fprintf(fp, "<tr>\n<td>%02d/%02d</td>\n<td>%02d%02d</td>\n<td>%.0f</td>\n<td>%.0f</td>\n", d, m, h, mins, radToDeg(topo.azimuth_rad), radToDeg(topo.elevation_rad));
 
                     /* Get sun position */
                     sun_nrelTopocentric(j2kUtc_d, &deltaTs, &site, &topo);
