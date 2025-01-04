@@ -65,7 +65,7 @@ double latitude = 0.0;
 double longitude = 0.0;
 double height = 0.0;
 int increment = 10;
-double timeZone = 0.0;
+double utcOffset = 0.0;
 char outputFile[255];
 int excludeHourStart = 0;
 int excludeHourEnd = 0;
@@ -92,12 +92,6 @@ int main(int argc, char** argv)
     if (!readIniFile())
         return 1;
 
-    FILE* fp = ::fopen(outputFile, "wt");
-    if (fp == NULL) {
-        ::fprintf(stderr, "Cannot open the Output File\n");
-        return 1;
-    }
-
     Sky_DeltaTs     deltaTs;        /* Differences between timescales */
     Sky_SiteProp    site;           /* Properties of the site */
     Sky_SiteHorizon topo;           /* Moon position, as seen from the site */
@@ -109,7 +103,7 @@ int main(int argc, char** argv)
     /* Set up the fixed site data */
     sky_setSiteLocation(latitude, longitude, height, &site);
     sky_setSiteTempPress(SITE_TEMPERATURE_degC, SITE_PRESSURE_hPa, &site);
-    sky_setSiteTimeZone(timeZone, &site);
+    sky_setSiteTimeZone(utcOffset, &site);
 
     time_t now = ::time(NULL);
 
@@ -144,6 +138,30 @@ int main(int argc, char** argv)
     now = ::mktime(tm);
 
     bool isUp = false;
+
+    char* p1 = ::strstr(outputFile, "%Y");
+    if (p1 != NULL) {
+        char temp[255];
+        ::strncpy(temp, outputFile, p1 - outputFile);
+        ::sprintf(temp + (p1 - outputFile), "%04d", year + 1900);
+        ::strcat(temp, p1 + 2);
+        ::strcpy(outputFile, temp);
+    }
+
+    char* p2 = ::strstr(outputFile, "%M");
+    if (p2 != NULL) {
+        char temp[255];
+        ::strncpy(temp, outputFile, p2 - outputFile);
+        ::sprintf(temp + (p2 - outputFile), "%02d", month + 1);
+        ::strcat(temp, p2 + 2);
+        ::strcpy(outputFile, temp);
+    }
+
+    FILE* fp = ::fopen(outputFile, "wt");
+    if (fp == NULL) {
+        ::fprintf(stderr, "Cannot open the Output File\n");
+        return 1;
+    }
 
     ::fprintf(fp, "<!DOCTYPE html>\n<html>\n<head>\n<style>\n");
     ::fprintf(fp, "table, th, td {\nborder: 1px solid black;\nborder-collapse: collapse;\n}\n");
@@ -222,6 +240,8 @@ int main(int argc, char** argv)
     ::fprintf(fp, "</body>\n</html>\n");
 
     ::fclose(fp);
+
+    ::printf("HTML data written to %s\n", outputFile);
 
     return 0;
 }
@@ -368,8 +388,8 @@ bool readIniFile()
                 return false;
         } else if (::strcmp(keyword, "Height") == 0) {
             height = ::atof(value);
-        } else if (::strcmp(keyword, "TimeZone") == 0) {
-            timeZone = ::atof(value);
+        } else if (::strcmp(keyword, "UTCOffset") == 0) {
+            utcOffset = ::atof(value);
         } else if (::strcmp(keyword, "Increment") == 0) {
             increment = ::atoi(value);
         } else if (::strcmp(keyword, "ElevationFile") == 0) {
@@ -404,8 +424,8 @@ bool processLocator(const char* locator)
     latitude   = double(locator[1] - 'A') * 10.0;
     longitude += double(locator[2] - '0') * 2.0;
     latitude  += double(locator[3] - '0') * 1.0;
-    longitude += double(locator[4] - 'A') * 0.0833;
-    latitude  += double(locator[5] - 'A') * 0.0417;
+    longitude += double(locator[4] - 'A') * 0.0833 + 0.0833 / 2.0;
+    latitude  += double(locator[5] - 'A') * 0.0417 + 0.0417 / 2.0;
 
     latitude  -= 90.0;
     longitude -= 180.0;
